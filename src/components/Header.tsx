@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { auth, googleProvider } from '../firebaseConfig';
 import { signInWithPopup, signOut } from 'firebase/auth';
 import { Avatar, Button, FormControlLabel, styled, Switch } from '@mui/material';
@@ -128,6 +128,10 @@ const Header = () => {
     }
     toggleColorMode();
   }
+
+  useEffect(() => {
+    if (!userPreferenceStore) setColorModeNoUser('light');
+  }, [userPreferenceStore]);
 
   return (
     <Layout theme={theme}>

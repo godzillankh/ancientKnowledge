@@ -1,6 +1,5 @@
 import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from 'react'
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { AuthContext } from './authContext';
 import { UserPreferencesContext } from './userPreferences';
 
 export const ColorModeContext = createContext({ toggleColorMode: () => {} });
@@ -11,7 +10,6 @@ interface Props {
 
 export const ColorModeProvider = ({ children }: Props) => {
   const [mode, setMode] = useState<'light' | 'dark'>('light');
-  const { user } = useContext(AuthContext);
   const { userPreferenceStore } = useContext(UserPreferencesContext);
 
   // Update color according to the user preferences
@@ -19,8 +17,7 @@ export const ColorModeProvider = ({ children }: Props) => {
     if ((!userPreferenceStore?.lightDarkMode && mode === 'dark') || (userPreferenceStore?.lightDarkMode !== mode)) {
       setMode(userPreferenceStore?.lightDarkMode || 'light'); // light by default
     }
-
-  }, [user, userPreferenceStore]);
+  }, [userPreferenceStore]);
 
 
   const colorMode = useMemo(
