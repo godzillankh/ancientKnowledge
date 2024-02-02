@@ -23,7 +23,6 @@ import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import { ScreenInterface, ScreenInterfaceWithId } from '../typesInterfaces/screenAndSection';
 import { screensService } from '../api/screensApi';
 import { ScreensContext } from '../hooks/screensContext';
-import { DataItemInterface } from '../typesInterfaces/dataItem';
 
 const Layout = styled('div')(({ theme }) => ({
   backgroundColor: theme.palette.background.default,
@@ -46,6 +45,7 @@ const AccordeonLayout = styled(Accordion)(({ theme }) => ({
   borderRadius: '10px !important;',
   boxShadow: 'unset',
   display: 'flex',
+  flex: 1,
   flexDirection: 'column',
 }));
 
@@ -110,7 +110,6 @@ const Body = () => {
   const [screenDirection, setScreenDirection] = useState<'row' | 'column'>('row');
   const [activateEditableScreen, setActivateEditableScreen] = useState<boolean>(false);
   const [screen, setScreen] = useState<ScreenInterface | ScreenInterfaceWithId | undefined>(undefined);
-  const { addDataItem } = dataItemApiService();
 
   const navigate = useNavigate();
 
@@ -149,17 +148,6 @@ const Body = () => {
   return (
     <Layout theme={theme}>
       <TabBarStyled>
-        <TextField
-          label="Create multiple data at the same time"
-          size="small"
-          variant="outlined"
-          onChange={async (event: React.ChangeEvent<HTMLInputElement>) => {
-            const listData: DataItemInterface[] = JSON.parse(event.target.value);
-            listData.forEach(async (item) => {
-              addDataItem(item);
-            });
-          }}
-        />
         <AccordeonLayout theme={theme}>
           <AccordionSummary
             expandIcon={<ExpandMoreIcon />}

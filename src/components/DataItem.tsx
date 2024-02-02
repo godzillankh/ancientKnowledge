@@ -18,6 +18,7 @@ import { DataItemInterface, DataItemInterfaceWithId } from '../typesInterfaces/d
 import { dataItemApiService } from '../api/dataItemApi';
 import { AuthContext } from '../hooks/authContext';
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import { DataContext } from '../hooks/dataContext';
 import { getDifferentTags } from '../utils/tags';
@@ -125,6 +126,11 @@ const CardContentStyled = styled(CardContent)(() => (`
   margin: 0;
   padding: 0;
   padding-bottom: 0 !important;
+`));
+
+const DeleteIconStyled = styled(DeleteIcon)(({ theme }) => (`
+  margin-left: 10px;
+  color: ${theme.palette.error[getReverseMode(theme)]};
 `));
 
 const DEFAULT_DATAITEM_TYPE = DATAITEM_TYPES[0];
@@ -253,6 +259,7 @@ const DataItem = ({ data }: Props) => {
                 <CardStyled>
                   <EditBtnStyled aria-label="edit" size="small" onClick={() => setEditable(true)}>
                     <EditIcon fontSize="inherit" />
+                    <DeleteIconStyled fontSize="inherit" onClick={handlerRemoveItem} />
                   </EditBtnStyled>
                   <CardContentStyled>
                     {values.field1 && (
