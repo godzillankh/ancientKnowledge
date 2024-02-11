@@ -278,7 +278,7 @@ const DataItem = ({ data }: Props) => {
               !editable ? (
                 <CardStyled>
                   <EditBtnStyled aria-label="edit" size="small" onClick={() => setEditable(true)}>
-                    <EditIcon fontSize="inherit" />
+                    {values.userEmail === user?.email && <EditIcon fontSize="inherit" />}
                     <DeleteIconStyled fontSize="inherit" onClick={handlerRemoveItem} />
                   </EditBtnStyled>
                   <CardContentStyled>

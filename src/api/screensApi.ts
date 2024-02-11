@@ -4,27 +4,31 @@ import { useContext, useEffect, useState } from 'react';
 import { ScreensContext } from '../hooks/screensContext';
 import { AuthContext } from '../hooks/authContext';
 import { ScreenInterface, ScreenInterfaceWithId } from '../typesInterfaces/screenAndSection';
+import { useSearchParams } from 'react-router-dom';
 
 export function screensService() {
   const { user } = useContext(AuthContext);
   const { screensStore, setScreensStore } = useContext(ScreensContext);
   const [loading, setLoading] = useState(false);
+  const [searchParams] = useSearchParams();
+
+  const validUsers = [user?.email, searchParams.get('userEmail')].filter(userValue => !!userValue);
 
   // Get user preference after login and remove it after logout
   useEffect(() => {
-    if (user) {
+    if (validUsers.length) {
       getScreens();
     }
-  }, [user]);
+  }, [validUsers]);
 
   const getScreens = async () => {
-    if (!user) {
+    if (!user && !searchParams.get('userEmail')) {
       setScreensStore(undefined);
       return true;
     }
 
     setLoading(true);
-    const docs = query(collectionScreensFirebase, where('userEmail', '==', user?.email));
+    const docs = query(collectionScreensFirebase, where('userEmail', 'in', validUsers));
     return await getDocs(docs)
       .then((querySnapshot) => {
         const nextScreensStore: ScreenInterfaceWithId[] = [];

@@ -5,22 +5,26 @@ import { useContext, useState } from 'react';
 import { DataContext } from '../hooks/dataContext';
 import { AuthContext } from '../hooks/authContext';
 import { imagesApiService } from './imagesApi';
+import { useSearchParams } from 'react-router-dom';
 
 export function dataItemApiService() {
   const { user } = useContext(AuthContext);
   const { dataStore, setDataStore } = useContext(DataContext);
   const { addImage } = imagesApiService();
   const [loading, setLoading] = useState(false);
+  const [searchParams] = useSearchParams();
+
+  const validUsers = [user?.email, searchParams.get('userEmail')].filter(userValue => !!userValue);
 
   const getDataItems = async () => {
 
-    if (!user) {
+    if (!validUsers.length) {
       setDataStore(undefined);
       return true;
     }
 
     setLoading(true);
-    const docs = query(collectionDataFirebase, where('userEmail', '==', user?.email));
+    const docs = query(collectionDataFirebase, where('userEmail', 'in', validUsers));
     return await getDocs(docs)
       .then((querySnapshot) => {
         const nextDataStore: DataItemInterfaceWithId[] = [];

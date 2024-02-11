@@ -9,13 +9,15 @@ interface Props {
 }
 
 export const ColorModeProvider = ({ children }: Props) => {
-  const [mode, setMode] = useState<'light' | 'dark'>('light');
+  const queryMode = new URLSearchParams(window.location.search).get('colorMode')
+  const [mode, setMode] = useState<'light' | 'dark'>(queryMode === 'dark' ? 'dark' : 'light');
   const { userPreferenceStore } = useContext(UserPreferencesContext);
 
   // Update color according to the user preferences
   useEffect(() => {
-    if ((!userPreferenceStore?.lightDarkMode && mode === 'dark') || (userPreferenceStore?.lightDarkMode !== mode)) {
-      setMode(userPreferenceStore?.lightDarkMode || 'light'); // light by default
+    if (userPreferenceStore) {
+      const userColorMode = userPreferenceStore.lightDarkMode;
+      if (userColorMode !== mode) setMode(userColorMode);
     }
   }, [userPreferenceStore]);
 

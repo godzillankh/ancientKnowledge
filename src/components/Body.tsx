@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Accordion,
   AccordionDetails,
@@ -24,6 +24,7 @@ import { ScreenInterface, ScreenInterfaceWithId } from '../typesInterfaces/scree
 import { screensService } from '../api/screensApi';
 import { ScreensContext } from '../hooks/screensContext';
 import { imagesApiService } from '../api/imagesApi';
+import { AuthContext } from '../hooks/authContext';
 
 const Layout = styled('div')(({ theme }) => ({
   backgroundColor: theme.palette.background.default,
@@ -114,6 +115,7 @@ const Body = () => {
   const theme = useTheme();
   const [screenDirection, setScreenDirection] = useState<'row' | 'column'>('row');
   const [activateEditableScreen, setActivateEditableScreen] = useState<boolean>(false);
+  const [searchParams] = useSearchParams();
   const [screen, setScreen] = useState<ScreenInterface | ScreenInterfaceWithId | undefined>(undefined);
 
   const navigate = useNavigate();
@@ -125,6 +127,7 @@ const Body = () => {
   const { addScreen, removeScreen, updateScreen } = screensService();
   const { dataStore } = useContext(DataContext);
   const { screensStore } = useContext(ScreensContext);
+  const { user } = useContext(AuthContext);
 
   useEffect(() => {
     const getData = async () => {
@@ -133,6 +136,16 @@ const Body = () => {
     };
     getData();
   }, []);
+
+  useEffect(() => {
+    const queryScreenName = searchParams.get('screen');
+
+    if (screensStore && queryScreenName) {
+      const nextScreen = screensStore.find((dataItem) => dataItem.name === queryScreenName);
+      if (nextScreen) setScreen(nextScreen);
+    }
+
+  }, [screensStore]);
 
   const saveUpdateScreen = async () => {
     if (!screen) return;
@@ -190,7 +203,7 @@ const Body = () => {
                   </ButtonNewScreen>
                 </>
               ) : (
-                <ButtonNewScreen onClick={() => setActivateEditableScreen(true)}>
+                <ButtonNewScreen onClick={() => setActivateEditableScreen(true)} disabled={!user || screen.userEmail !== user.email}>
                   Edit Screen
                 </ButtonNewScreen>
               )
@@ -202,6 +215,7 @@ const Body = () => {
             )}
             <IconButton aria-label="delete" size="small" onClick={() => {
               navigate('', { replace: true });
+              setActivateEditableScreen(false);
               setScreen(undefined);
             }} color="error">
               <HighlightOffIcon fontSize="inherit" />
