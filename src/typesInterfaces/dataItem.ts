@@ -7,6 +7,7 @@ export interface DataItemInterface {
   tags: string[];
   field1?: string;
   field2: string | number;
+  image?: string;
   type: TYPE_DATAITEM_TYPES;
   userEmail: string;
 }

@@ -23,6 +23,7 @@ import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import { ScreenInterface, ScreenInterfaceWithId } from '../typesInterfaces/screenAndSection';
 import { screensService } from '../api/screensApi';
 import { ScreensContext } from '../hooks/screensContext';
+import { imagesApiService } from '../api/imagesApi';
 
 const Layout = styled('div')(({ theme }) => ({
   backgroundColor: theme.palette.background.default,
@@ -63,6 +64,10 @@ const TabBarStyled = styled('div')(({ theme }) => (`
   padding: 5px;
   display: flex;
   align-items: center;
+  
+  @media (max-width: 800px) {
+    display: none;
+  }
 `));
 
 const CreateScreenBtn = styled(Button)(({ theme }) => (`
@@ -116,6 +121,7 @@ const Body = () => {
   const screenEdition = screen && 'id' in screen;
 
   const { getDataItems } = dataItemApiService();
+  const { getImages } = imagesApiService();
   const { addScreen, removeScreen, updateScreen } = screensService();
   const { dataStore } = useContext(DataContext);
   const { screensStore } = useContext(ScreensContext);
@@ -123,6 +129,7 @@ const Body = () => {
   useEffect(() => {
     const getData = async () => {
      await getDataItems();
+     await getImages();
     };
     getData();
   }, []);
@@ -174,9 +181,14 @@ const Body = () => {
             <FlipIcon onClick={() => setScreenDirection(screenDirection === 'row' ? 'column' : 'row')} />
             {
               activateEditableScreen ? (
-                <ButtonNewScreen onClick={saveUpdateScreen}>
-                  {screenEdition ? 'Update' : 'Save'} screen
-                </ButtonNewScreen>
+                <>
+                  <ButtonNewScreen onClick={() => setActivateEditableScreen(false)}>
+                    Cancel Edition
+                  </ButtonNewScreen>
+                  <ButtonNewScreen onClick={saveUpdateScreen}>
+                    {screenEdition ? 'Update' : 'Save'} screen
+                  </ButtonNewScreen>
+                </>
               ) : (
                 <ButtonNewScreen onClick={() => setActivateEditableScreen(true)}>
                   Edit Screen

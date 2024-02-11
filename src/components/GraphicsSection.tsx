@@ -52,8 +52,6 @@ const GraphicsSection = ({ tagsSection, dataSection }: Props) => {
 
   const series = getGraphicData();
 
-  console.log('series: ', series);
-
   return (
     <PieChart
       /* @ts-expect-error TODO */

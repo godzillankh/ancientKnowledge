@@ -1,7 +1,11 @@
-import React, { useCallback, useContext, useState } from 'react';
+import React, { ChangeEvent, useCallback, useContext, useState } from 'react';
 import {
   Accordion,
-  Autocomplete, Button, ButtonGroup, Card, CardContent,
+  Autocomplete,
+  Button,
+  ButtonGroup,
+  Card,
+  CardContent,
   IconButton,
   styled,
   TextField,
@@ -25,7 +29,23 @@ import { getDifferentTags } from '../utils/tags';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import dayjs from 'dayjs';
+import { parseImage } from '../utils/file';
+import { ImagesContext } from '../hooks/imagesContext';
+
+const VisuallyHiddenInput = styled('input')({
+  bottom: 0,
+  clip: 'rect(0 0 0 0)',
+  clipPath: 'inset(50%)',
+  height: 1,
+  left: 0,
+  overflow: 'hidden',
+  position: 'absolute',
+  whiteSpace: 'nowrap',
+  width: 1,
+});
+
 
 const TagsWrapper = styled('div')(() => ({
   alignItems: 'center',
@@ -143,18 +163,17 @@ const CREATION_DATE = new Date().toLocaleDateString().replaceAll('/', '-');
 
 const DatePickerStyled = styled(DatePicker)(() => `
   margin-top: 10px;
+  margin-bottom: 10px;
 `);
 
 const DataItem = ({ data }: Props) => {
   const [autocompleteValue, setAutocompleteValue] = useState<string>('');
   const [editable, setEditable] = useState<boolean>(!data);
   const theme = useTheme();
+  const { imagesStore } = useContext(ImagesContext);
   const { user } = useContext(AuthContext);
   const { dataStore } = useContext(DataContext);
   const { addDataItem, removeDataItem, updateDataItem } = dataItemApiService();
-
-
-  if (data) console.log('DataItem: ', data);
 
   const initialStateFormik: DataItemInterface = data ||
     {
@@ -162,6 +181,7 @@ const DataItem = ({ data }: Props) => {
       tags: [],
       field1: '',
       field2: '',
+      image: undefined,
       type: DEFAULT_DATAITEM_TYPE,
       userEmail: user?.email || '',
     };
@@ -303,18 +323,30 @@ const DataItem = ({ data }: Props) => {
                 </>
               )
             }
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DatePickerStyled
-                label="creation date"
-                format="DD-MM-YYYY"
-                name="creationDate"
-                onChange={(newValue) => {
-                  // @ts-expect-error TODO: check this type
-                  setFieldValue('creationDate', dayjs(newValue).format('DD-MM-YYYY'));
-                }}
-                value={dayjs(values.creationDate, 'DD-MM-YYYY')}
-              />
-            </LocalizationProvider>
+            {editable && (
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePickerStyled
+                  label="creation date"
+                  format="DD-MM-YYYY"
+                  name="creationDate"
+                  onChange={(newValue) => {
+                    // @ts-expect-error TODO: check this type
+                    setFieldValue('creationDate', dayjs(newValue).format('DD-MM-YYYY'));
+                  }}
+                  value={dayjs(values.creationDate, 'DD-MM-YYYY')}
+                />
+              </LocalizationProvider>
+            )}
+            {imagesStore && values.image && imagesStore[values.image] && (
+              <div>
+                <img
+                  src={imagesStore[values.image]}
+                  alt="image"
+                  loading="lazy"
+                  style={{ maxHeight: '250px', maxWidth: '250px'}}
+                />
+              </div>
+            )}
             { editable && (
               <SubmitBtnsLayout>
                 <Tooltip title="Cancel edition">
@@ -327,6 +359,16 @@ const DataItem = ({ data }: Props) => {
                 <SubmitBtnStyled variant="outlined" color="error" onClick={handlerRemoveItem}>Remove data</SubmitBtnStyled>
                 {data && (<SubmitBtnStyled variant="contained" onClick={() => updateItem({ ...data, ...values })}>{data && 'Update data'}</SubmitBtnStyled>)}
                 <SubmitBtnStyled type="submit" variant="contained">{data ? 'Duplicate Data' : 'Add data'}</SubmitBtnStyled>
+                <Button component="label" variant="contained" startIcon={<CloudUploadIcon />} className="margin-left: 10px;">
+                  Upload file
+                  <VisuallyHiddenInput type="file" onChange={async (fileEvent: ChangeEvent<HTMLInputElement>) => {
+                    const file: File | undefined = fileEvent.target.files?.[0];
+                    if (file) {
+                      const fileBase64 = await parseImage(file);
+                      setFieldValue('image', fileBase64);
+                    }
+                  }} />
+                </Button>
               </SubmitBtnsLayout>
             )}
           </FormLayout>

@@ -4,10 +4,12 @@ import { DataItemInterface, DataItemInterfaceWithId } from '../typesInterfaces/d
 import { useContext, useState } from 'react';
 import { DataContext } from '../hooks/dataContext';
 import { AuthContext } from '../hooks/authContext';
+import { imagesApiService } from './imagesApi';
 
 export function dataItemApiService() {
   const { user } = useContext(AuthContext);
   const { dataStore, setDataStore } = useContext(DataContext);
+  const { addImage } = imagesApiService();
   const [loading, setLoading] = useState(false);
 
   const getDataItems = async () => {
@@ -30,8 +32,7 @@ export function dataItemApiService() {
         });
         setDataStore(nextDataStore);
       })
-      .catch((e) => {
-        console.log('e: ', e);
+      .catch(() => {
         return false;
       }).finally(() => {
         setLoading(false);
@@ -39,6 +40,16 @@ export function dataItemApiService() {
   }
 
   const addDataItem = async (data: DataItemInterface) => {
+    if (!user?.email) return false;
+
+    if (data.image) {
+      const imageId = await addImage({ dataImage: data.image, userEmail: user.email });
+      if (imageId && typeof imageId === 'string') {
+        data.image = imageId;
+      } else {
+        data.image = undefined;
+      }
+    }
     setLoading(true);
     return await addDoc(collectionDataFirebase, data)
       .then((doc) => {
@@ -68,7 +79,6 @@ export function dataItemApiService() {
   }
 
   const updateDataItem = async (data: DataItemInterfaceWithId) => {
-    console.log('updateDataItem- data: ', data);
     setLoading(true);
     return await setDoc(
       doc(collectionDataFirebase, data.id),

@@ -6,6 +6,7 @@ import App from './App';
 import { ColorModeProvider } from './hooks/colorModeContext';
 import { ScreensProvider } from './hooks/screensContext';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { ImagesProvider } from './hooks/imagesContext';
 
 function AppWrapper() {
 
@@ -22,7 +23,9 @@ function AppWrapper() {
           <ColorModeProvider>
             <DataProvider>
               <ScreensProvider>
-                <RouterProvider router={router} />
+                <ImagesProvider>
+                  <RouterProvider router={router} />
+                </ImagesProvider>
               </ScreensProvider>
             </DataProvider>
           </ColorModeProvider>
