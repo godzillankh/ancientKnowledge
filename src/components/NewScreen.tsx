@@ -207,7 +207,7 @@ const NewScreen = ({ editable, flexDirection = 'row', screen, setScreen }: Props
                 const itemsToShow = getDataFilteredByTags({ dataStore, tags: screenTags });
                 const showColumnsRowsTitle = editable || !!nameColumnRow.length || true;
 
-                const allTypesAreNumeric = itemsToShow.every((item) => item.type === 'numeric');
+                const allTypesAreNumeric = itemsToShow.length && itemsToShow.every((item) => item.type === 'numeric');
 
                 return (
                   <RowSection className={`${flexColumn}`} key={`row-${indexRow}`} sx={showColumnsRowsTitle ? { marginTop: '46px' } : {}} >
