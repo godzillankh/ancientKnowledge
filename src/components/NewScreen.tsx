@@ -37,7 +37,7 @@ const RowSection = styled('div')(() => ({
   position: 'relative',
 }));
 
-const TitleLayout = styled('div')(({ theme }) => ({
+const TitleLayout = styled('div')<{editable?: boolean}>(({ theme, editable }) => ({
   alignItems: 'center',
   backgroundColor: theme.palette.background.paper,
   border: `1px solid ${theme.palette.primary[getReverseMode(theme)]}`,
@@ -50,7 +50,7 @@ const TitleLayout = styled('div')(({ theme }) => ({
   left: '5px',
   padding: '5px',
   position: 'absolute',
-  top: '-4px',
+  top: editable ? '-4px' : '-45px',
 }));
 
 const RowBodySection = styled('div')(({ theme }) => (`
@@ -168,7 +168,7 @@ const NewScreen = ({ editable, flexDirection = 'row', screen, setScreen }: Props
         return (
           <RowSection key={`row-${indexRow}`}>
             {showRowsColumnsTitle ?
-              (<TitleLayout>
+              (<TitleLayout editable={editable}>
                 <TextFieldStyled
                   disabled={!editable}
                   label={`${getTextAccordingDirection(flexDirection)} ${indexRow + 1}`}
@@ -205,14 +205,14 @@ const NewScreen = ({ editable, flexDirection = 'row', screen, setScreen }: Props
               {rowsColumns.map(({tags, flex: flexColumn, name: nameColumnRow }, indexColumn) => {
                 const screenTags = screen.rowsColumns[indexRow].rowsColumns[indexColumn].tags;
                 const itemsToShow = getDataFilteredByTags({ dataStore, tags: screenTags });
-                const showColumnsRowsTitle = editable || nameColumnRow.length;
+                const showColumnsRowsTitle = editable || !!nameColumnRow.length || true;
 
                 const allTypesAreNumeric = itemsToShow.every((item) => item.type === 'numeric');
 
                 return (
                   <RowSection className={`${flexColumn}`} key={`row-${indexRow}`} sx={showColumnsRowsTitle ? { marginTop: '46px' } : {}} >
                     {showColumnsRowsTitle ? (
-                      <TitleLayout>
+                      <TitleLayout editable={editable}>
                         <TextFieldStyled
                           disabled={!editable}
                           label={`${getTextAccordingDirection(flexDirectionRowColumn)} ${indexColumn + 1}`}
@@ -246,31 +246,33 @@ const NewScreen = ({ editable, flexDirection = 'row', screen, setScreen }: Props
                       </TitleLayout>
                     ) : <></>}
                     <RowBodySection key={`column-${indexColumn}`} sx={{ flexDirection: 'column', ...showRowsColumnsTitle ? { marginTop: '46px' } : {} }}>
-                      <Autocomplete
-                        multiple
-                        id="tags-filled"
-                        options={getAutocompleteOptions(indexRow, indexColumn)}
-                        value={tags}
-                        freeSolo
-                        onChange={(event, newTags: string[]) => {
-                          const nextScreen = JSON.parse(JSON.stringify(screen));
-                          nextScreen.rowsColumns[indexRow].rowsColumns[indexColumn].tags = newTags;
-                          setScreen(nextScreen);
-                        }}
-                        renderTags={(value: readonly string[], getTagProps) =>
-                          value.map((option: string, index: number) => (
-                            <Chip {...getTagProps({ index })} key={`newScreen-tag-chip-${index}`} variant="outlined" label={option} />
-                          ))
-                        }
-                        renderInput={(params) => (
-                          <TextFieldStyled
-                            {...params}
-                            variant="filled"
-                            label="Section tags"
-                            placeholder="Favorites"
-                          />
-                        )}
-                      />
+                      { editable && (
+                        <Autocomplete
+                          multiple
+                          id="tags-filled"
+                          options={getAutocompleteOptions(indexRow, indexColumn)}
+                          value={tags}
+                          freeSolo
+                          onChange={(event, newTags: string[]) => {
+                            const nextScreen = JSON.parse(JSON.stringify(screen));
+                            nextScreen.rowsColumns[indexRow].rowsColumns[indexColumn].tags = newTags;
+                            setScreen(nextScreen);
+                          }}
+                          renderTags={(value: readonly string[], getTagProps) =>
+                            value.map((option: string, index: number) => (
+                              <Chip {...getTagProps({ index })} key={`newScreen-tag-chip-${index}`} variant="outlined" label={option} />
+                            ))
+                          }
+                          renderInput={(params) => (
+                            <TextFieldStyled
+                              {...params}
+                              variant="filled"
+                              label="Section tags"
+                              placeholder="Favorites"
+                            />
+                          )}
+                        />
+                      )}
                       <ScreenLayout>
                         {allTypesAreNumeric && (
                           <GraphicsSection tagsSection={tags} dataSection={itemsToShow} />

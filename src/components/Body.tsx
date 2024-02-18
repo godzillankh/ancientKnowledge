@@ -23,7 +23,7 @@ import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import { ScreenInterface, ScreenInterfaceWithId } from '../typesInterfaces/screenAndSection';
 import { screensService } from '../api/screensApi';
 import { ScreensContext } from '../hooks/screensContext';
-import { DataItemInterface } from '../typesInterfaces/dataItem';
+import { imagesApiService } from '../api/imagesApi';
 
 const Layout = styled('div')(({ theme }) => ({
   backgroundColor: theme.palette.background.default,
@@ -46,6 +46,7 @@ const AccordeonLayout = styled(Accordion)(({ theme }) => ({
   borderRadius: '10px !important;',
   boxShadow: 'unset',
   display: 'flex',
+  flex: 1,
   flexDirection: 'column',
 }));
 
@@ -63,6 +64,10 @@ const TabBarStyled = styled('div')(({ theme }) => (`
   padding: 5px;
   display: flex;
   align-items: center;
+  
+  @media (max-width: 800px) {
+    display: none;
+  }
 `));
 
 const CreateScreenBtn = styled(Button)(({ theme }) => (`
@@ -110,13 +115,13 @@ const Body = () => {
   const [screenDirection, setScreenDirection] = useState<'row' | 'column'>('row');
   const [activateEditableScreen, setActivateEditableScreen] = useState<boolean>(false);
   const [screen, setScreen] = useState<ScreenInterface | ScreenInterfaceWithId | undefined>(undefined);
-  const { addDataItem } = dataItemApiService();
 
   const navigate = useNavigate();
 
   const screenEdition = screen && 'id' in screen;
 
   const { getDataItems } = dataItemApiService();
+  const { getImages } = imagesApiService();
   const { addScreen, removeScreen, updateScreen } = screensService();
   const { dataStore } = useContext(DataContext);
   const { screensStore } = useContext(ScreensContext);
@@ -124,6 +129,7 @@ const Body = () => {
   useEffect(() => {
     const getData = async () => {
      await getDataItems();
+     await getImages();
     };
     getData();
   }, []);
@@ -149,17 +155,6 @@ const Body = () => {
   return (
     <Layout theme={theme}>
       <TabBarStyled>
-        <TextField
-          label="Create multiple data at the same time"
-          size="small"
-          variant="outlined"
-          onChange={async (event: React.ChangeEvent<HTMLInputElement>) => {
-            const listData: DataItemInterface[] = JSON.parse(event.target.value);
-            listData.forEach(async (item) => {
-              addDataItem(item);
-            });
-          }}
-        />
         <AccordeonLayout theme={theme}>
           <AccordionSummary
             expandIcon={<ExpandMoreIcon />}
@@ -186,9 +181,14 @@ const Body = () => {
             <FlipIcon onClick={() => setScreenDirection(screenDirection === 'row' ? 'column' : 'row')} />
             {
               activateEditableScreen ? (
-                <ButtonNewScreen onClick={saveUpdateScreen}>
-                  {screenEdition ? 'Update' : 'Save'} screen
-                </ButtonNewScreen>
+                <>
+                  <ButtonNewScreen onClick={() => setActivateEditableScreen(false)}>
+                    Cancel Edition
+                  </ButtonNewScreen>
+                  <ButtonNewScreen onClick={saveUpdateScreen}>
+                    {screenEdition ? 'Update' : 'Save'} screen
+                  </ButtonNewScreen>
+                </>
               ) : (
                 <ButtonNewScreen onClick={() => setActivateEditableScreen(true)}>
                   Edit Screen
